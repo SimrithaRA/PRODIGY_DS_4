@@ -1,0 +1,87 @@
+# Social Media Sentiment Analysis
+
+#This code performs social media sentiment analysis and provides various visualizations. Below is an explanation of the code's sections.
+
+## Import Libraries
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+import warnings
+import re
+import string
+from collections import Counter
+import matplotlib.pyplot as plt
+from plotly.subplots import make_subplots
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.figure_factory as ff
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from wordcloud import WordCloud
+from collections import Counter
+from keras.layers import LSTM
+
+## Data Loading and Preprocessing
+
+# Load data from CSV files
+col_names = ['ID', 'Entity', 'Sentiment', 'Sentence']
+data = pd.read_csv('twitter_training.csv', names=col_names)
+test = pd.read_csv('twitter_validation.csv', names=col_names)
+
+# Check for missing values and drop rows with missing 'Sentence'
+data = data.dropna()
+
+# Replace 'Irrelevant' sentiment with 'Neutral'
+data['Sentiment'] = data['Sentiment'].replace('Irrelevant', 'Neutral')
+test['Sentiment'] = test['Sentiment'].replace('Irrelevant', 'Neutral')
+
+## Sentiment Analysis
+# Analyze sentiment distribution
+sentiment_counts = data['Sentiment'].value_counts().sort_index()
+sentiment_labels = ['Negative', 'Neutral', 'Positive']
+sentiment_colors = ['red', 'grey', 'green']
+
+# Create a pie chart to show sentiment distribution
+fig = go.Figure(data=[go.Pie(
+    labels=sentiment_counts.index,
+    values=sentiment_counts.values,
+    textinfo='percent+value+label',
+    marker_colors=sentiment_colors,
+    textposition='auto',
+    hole=.3
+)])
+
+# Customize the chart layout and display
+fig.update_layout(
+    title_text='Sentiment Distribution',
+    template='plotly_white',
+    xaxis=dict(title='Sources'),
+    yaxis=dict(title='Number of Posts in Twitter')
+)
+fig.show()
+
+## Entity Distribution
+
+# Analyze the distribution of the top 10 entities
+top10_entity_counts = data['Entity'].value_counts().sort_values(ascending=False)[:10]
+
+# Create a bar chart to display entity distribution
+fig = px.bar(
+    x=top10_entity_counts.index,
+    y=top10_entity_counts.values,
+    color=top10_entity_counts.values,
+    text=top10_entity_counts.values,
+    color_continuous_scale='Blues'
+)
+
+# Customize the chart layout and display
+fig.update_layout(
+    title_text='Top 10 Twitter Entity Distribution',
+    template='plotly_white',
+    xaxis=dict(title='Entity'),
+    yaxis=dict(title='Number of Posts in Twitter')
+)
+fig.show()
